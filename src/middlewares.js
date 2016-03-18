@@ -24,9 +24,18 @@ function handleParseHeaders(req, res, next) {
     clientKey: req.get('X-Parse-Client-Key'),
     javascriptKey: req.get('X-Parse-Javascript-Key'),
     dotNetKey: req.get('X-Parse-Windows-Key'),
-    restAPIKey: req.get('X-Parse-REST-API-Key')
+    restAPIKey: req.get('X-Parse-REST-API-Key'),
+    httpAuth: req.get('Authorization')
   };
 
+  // See if we can find the appId on the http authentication
+  if (info.httpAuth) {
+    var appIdAndMasterKeyBase64 = info.httpAuth.split(' ')[1];
+    var appIdMasterKey = new Buffer(appIdAndMasterKeyBase64, 'base64').toString('ascii').split(':');
+    info.appId = appIdMasterKey[0];
+    info.masterKey = appIdMasterKey[1];
+  }
+  
   if (req.body) {
     // Unity SDK sends a _noBody key which needs to be removed.
     // Unclear at this point if action needs to be taken.
